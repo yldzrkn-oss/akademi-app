@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İstanbul Yıldız Akademi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:#e1f5ee;}
+.tab-bar{display:flex;gap:6px;flex-wrap:wrap;padding:.75rem 1rem 0;background:#0f6e56;position:sticky;top:0;z-index:100;}
+.tab{background:rgba(255,255,255,0.15);border:none;padding:7px 14px;border-radius:8px 8px 0 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.85);font-weight:500;}
+.tab:hover{background:rgba(255,255,255,0.25);}
+.tab.on{background:#e1f5ee;color:#085041;}
+.save-bar{background:#085041;padding:7px 1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.save-bar-info{color:rgba(255,255,255,0.7);font-size:11px;}
+.save-bar-btn{background:#1d9e75;color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;}
+.save-bar-btn:hover{background:#168a64;}
+.save-ok{color:#9fe1cb;font-size:11px;font-weight:500;display:none;}
+.sec{display:none;}.sec.vis{display:block;}
+.page{padding:1rem;}
+.card{background:#fff;border:0.5px solid #9fe1cb;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;}
+.metric{background:#fff;border-radius:8px;padding:.75rem 1rem;border:0.5px solid #9fe1cb;}
+.ml{font-size:11px;color:#0f6e56;margin-bottom:3px;}
+.mv{font-size:17px;font-weight:600;color:#04342c;}
+.fg{display:flex;flex-direction:column;gap:3px;}
+.fg label{font-size:11px;color:#085041;font-weight:500;}
+.fg input,.fg select{font-size:13px;padding:7px 9px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;width:100%;}
+.fg input:focus,.fg select:focus{outline:none;border-color:#0f6e56;background:#fff;box-shadow:0 0 0 2px #c8f0e4;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.grid5{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;}
+.btn{padding:6px 14px;border-radius:8px;border:0.5px solid #5dcaa5;background:#e1f5ee;color:#085041;cursor:pointer;font-size:12px;font-weight:500;}
+.btn:hover{background:#9fe1cb;}
+.btn-primary{background:#0f6e56;color:#fff;border-color:#0f6e56;}
+.btn-primary:hover{background:#085041;}
+.btn-danger{background:#fcebeb;color:#a32d2d;border-color:#f09595;}
+.btn-warn{background:#fff7e6;color:#633806;border-color:#ef9f27;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:7px 8px;font-size:11px;color:#0f6e56;font-weight:600;border-bottom:1.5px solid #9fe1cb;white-space:nowrap;background:#f0faf6;}
+td{padding:7px 8px;border-bottom:0.5px solid #c8f0e4;color:#04342c;vertical-align:middle;}
+tr:hover td{background:#f7fdf9;}
+.warn-row td{background:#faeeda!important;}
+.overdue-row td{background:#fcebeb!important;}
+.badge{font-size:10px;padding:2px 7px;border-radius:20px;display:inline-block;white-space:nowrap;font-weight:500;}
+.empty-state{text-align:center;padding:2.5rem;color:#5dcaa5;font-size:13px;}
+.prog-bar-wrap{height:5px;background:#c8f0e4;border-radius:4px;overflow:hidden;margin-top:4px;}
+.prog-bar{height:100%;border-radius:4px;transition:width .3s;}
+.summary-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:0.5px solid #c8f0e4;}
+.summary-row:last-child{border-bottom:none;}
+.teacher-row{display:grid;grid-template-columns:1.6fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;}
+input[type=file]{display:none;}
+.upload-area{border:1.5px dashed #5dcaa5;border-radius:12px;padding:1.25rem;text-align:center;cursor:pointer;color:#0f6e56;font-size:13px;background:#f0faf6;transition:background .15s;}
+.upload-area:hover{background:#e1f5ee;}
+.ph{font-size:14px;font-weight:600;color:#085041;margin-bottom:12px;}
+.taksit-box{background:#f0faf6;border-radius:8px;margin-bottom:6px;border:0.5px solid #9fe1cb;overflow:hidden;}
+.t-main{display:flex;align-items:center;gap:8px;padding:9px 12px;flex-wrap:wrap;}
+.t-kismi{background:#fff7e6;border-top:0.5px solid #ef9f27;padding:9px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+@media(max-width:600px){.grid3,.grid4{grid-template-columns:1fr 1fr;}.teacher-row{grid-template-columns:1fr 1fr;}}
+@media print{
+  .tab-bar,.save-bar,.btn,.btn-primary,.btn-danger,.btn-warn,.upload-area{display:none!important;}
+  body{background:#fff!important;}
+  .sec{display:block!important;}
+  .card{border:1px solid #ccc!important;page-break-inside:avoid;margin-bottom:8px!important;}
+  .page{padding:8px!important;}
+  .metric{border:1px solid #ccc!important;}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+<div class="tab-bar">
+  <button class="tab on" onclick="T('kayit',this)">📝 Kayıt</button>
+  <button class="tab" onclick="T('liste',this)">📋 Öğrenciler</button>
+  <button class="tab" onclick="T('sade',this)">👥 Sade Liste</button>
+  <button class="tab" onclick="T('odemeler',this)">💳 Ödemeler</button>
+  <button class="tab" onclick="T('ozet',this)">📊 Gelir</button>
+  <button class="tab" onclick="T('gider',this)">🧾 Giderler</button>
+  <button class="tab" onclick="T('karzarar',this)">💰 Kar/Zarar</button>
+</div>
+
+<div class="save-bar">
+  <span class="save-bar-info" id="save_info">Tüm değişiklikler otomatik kaydedilir</span>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <span class="save-ok" id="save_ok">✓ Kaydedildi</span>
+    <button class="save-bar-btn" onclick="kaydet(true)">💾 Kaydet</button>
+    <button class="save-bar-btn" onclick="excelAktar()" style="background:#185fa5;">📊 Excel</button>
+    <button class="save-bar-btn" onclick="pdfAktar()" style="background:#a32d2d;">📄 PDF</button>
+  </div>
+</div>
+
+<!-- KAYIT -->
+<div id="sec-kayit" class="sec vis page">
+  <div class="card">
+    <p class="ph">Yeni öğrenci kaydı</p>
+    <div class="grid4" style="margin-bottom:8px;">
+      <div class="fg"><label>Ad Soyad</label><input id="f_ad" placeholder="Öğrenci adı"></div>
+      <div class="fg"><label>Program</label>
+        <select id="f_prog" onchange="updateF()">
+          <option value="sinif">Sınıf eğitimi</option>
+          <option value="ozel">Özel ders</option>
+          <option value="kocluk">Koçluk</option>
+          <option value="deneme">Deneme kulübü</option>
+        </select>
+      </div>
+      <div class="fg"><label>Sınıf</label>
+        <select id="f_sinif">
+          <option value="5">5. Sınıf</option><option value="6">6. Sınıf</option>
+          <option value="7">7. Sınıf</option><option value="8" selected>8. Sınıf</option>
+        </select>
+      </div>
+      <div class="fg"><label>Cinsiyet</label>
+        <select id="f_cinsiyet">
+          <option value="kiz">👧 Kız</option>
+          <option value="erkek">👦 Erkek</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid4" style="margin-bottom:8px;">
+      <div class="fg"><label>Toplam ücret (₺)</label><input type="number" id="f_ucret" value="150000" step="1000" min="0"></div>
+      <div class="fg"><label>Taksit sayısı</label>
+        <select id="f_taksit">
+          <option value="1">Peşin</option><option value="2">2 taksit</option><option value="3">3 taksit</option>
+          <option value="4">4 taksit</option><option value="5">5 taksit</option><option value="6">6 taksit</option>
+          <option value="7">7 taksit</option><option value="8">8 taksit</option><option value="9">9 taksit</option>
+          <option value="10">10 taksit</option><option value="12">12 taksit</option>
+        </select>
+      </div>
+      <div class="fg"><label>İlk ödeme tarihi</label><input type="date" id="f_ilk"></div>
+      <div class="fg"><label>Kayıt tarihi</label><input type="date" id="f_tarih"></div>
+    </div>
+    <div class="grid2" style="margin-bottom:8px;">
+      <div class="fg"><label>Veli adı</label><input id="f_veli" placeholder="İsteğe bağlı"></div>
+      <div class="fg"><label>Telefon</label><input id="f_tel" placeholder="İsteğe bağlı"></div>
+    </div>
+    <div class="grid2" style="margin-bottom:8px;">
+      <div class="fg"><label>Okul adı</label><input id="f_okul" placeholder="Örn: Atatürk Ortaokulu"></div>
+      <div class="fg"><label>Notlar</label><input id="f_not" placeholder="İsteğe bağlı"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-primary" onclick="addSt()">+ Ekle</button>
+      <span id="f_err" style="font-size:12px;color:#a32d2d;display:none;"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="ph">Excel'den içe aktar</p>
+    <div class="upload-area" onclick="document.getElementById('xlsUp').click()">
+      📊 .xlsx veya .csv seç<br>
+      <span style="font-size:11px;color:#5dcaa5;">Ad Soyad · Program · Sınıf · Ücret · Taksit · Tarih sütunları okunur</span>
+    </div>
+    <input type="file" id="xlsUp" accept=".xlsx,.csv" onchange="importXls(this)">
+    <div id="xls_log" style="font-size:12px;margin-top:8px;color:#0f6e56;"></div>
+  </div>
+
+  <div class="grid5" style="margin-bottom:10px;">
+    <div class="metric"><p class="ml">Toplam kayıt</p><p class="mv" id="m_top">0</p></div>
+    <div class="metric"><p class="ml">Toplam gelir</p><p class="mv" style="color:#185fa5;" id="m_gel">0 ₺</p></div>
+    <div class="metric"><p class="ml">Tahsilat</p><p class="mv" style="color:#0f6e56;" id="m_tah">0 ₺</p></div>
+    <div class="metric"><p class="ml">Bekleyen</p><p class="mv" style="color:#ba7517;" id="m_bek">0 ₺</p></div>
+    <div class="metric"><p class="ml">Geciken</p><p class="mv" style="color:#a32d2d;" id="m_gec">0 ₺</p></div>
+  </div>
+  <div class="grid4" style="margin-bottom:10px;">
+    <div class="metric"><p class="ml">Sınıf eğitimi</p><p class="mv" id="c_sinif">0</p><div class="prog-bar-wrap"><div class="prog-bar" id="b_sinif" style="background:#3266ad;width:0%;"></div></div></div>
+    <div class="metric"><p class="ml">Özel ders</p><p class="mv" id="c_ozel">0</p><div class="prog-bar-wrap"><div class="prog-bar" id="b_ozel" style="background:#1d9e75;width:0%;"></div></div></div>
+    <div class="metric"><p class="ml">Koçluk</p><p class="mv" id="c_kocluk">0</p><div class="prog-bar-wrap"><div class="prog-bar" id="b_kocluk" style="background:#ba7517;width:0%;"></div></div></div>
+    <div class="metric"><p class="ml">Deneme kulübü</p><p class="mv" id="c_deneme">0</p><div class="prog-bar-wrap"><div class="prog-bar" id="b_deneme" style="background:#888780;width:0%;"></div></div></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <p class="ph" style="margin:0;">Son kayıtlar</p>
+      <div style="display:flex;gap:6px;font-size:10px;">
+        <span style="background:#fcebeb;color:#791f1f;padding:2px 8px;border-radius:20px;font-weight:500;">⚠ Gecikmiş</span>
+        <span style="background:#faeeda;color:#633806;padding:2px 8px;border-radius:20px;font-weight:500;">⏰ Yaklaşan</span>
+      </div>
+    </div>
+    <div id="son_k"></div>
+  </div>
+</div>
+
+<!-- LİSTE -->
+<div id="sec-liste" class="sec page">
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+    <input id="srch" placeholder="Ad ile ara..." oninput="renderL()" style="font-size:12px;padding:7px 10px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;flex:1;min-width:140px;">
+    <select id="fp" onchange="renderL()" style="font-size:12px;padding:7px 9px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;">
+      <option value="">Tüm programlar</option><option value="sinif">Sınıf eğitimi</option><option value="ozel">Özel ders</option><option value="kocluk">Koçluk</option><option value="deneme">Deneme kulübü</option>
+    </select>
+    <select id="fs" onchange="renderL()" style="font-size:12px;padding:7px 9px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;">
+      <option value="">Tüm sınıflar</option><option value="5">5.</option><option value="6">6.</option><option value="7">7.</option><option value="8">8.</option>
+    </select>
+    <select id="fo" onchange="renderL()" style="font-size:12px;padding:7px 9px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;">
+      <option value="">Tüm ödemeler</option><option value="geciken">Geciken</option><option value="yaklasan">Yaklaşan</option><option value="tamam">Tamam</option>
+    </select>
+    <select id="fc" onchange="renderL()" style="font-size:12px;padding:7px 9px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;">
+      <option value="">Tüm cinsiyetler</option><option value="kiz">👧 Kız</option><option value="erkek">👦 Erkek</option>
+    </select>
+  </div>
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>#</th><th>Ad Soyad</th><th>Cinsiyet</th><th>Program</th><th>Sınıf</th><th>Okul</th><th>Ücret</th><th>Tahsilat</th><th>Kalan</th><th>Sonraki ödeme</th><th>Durum</th><th>Kayıt</th><th></th></tr></thead>
+      <tbody id="st_tbl"></tbody>
+    </table>
+  </div>
+  <div id="l_cnt" style="font-size:11px;color:#0f6e56;margin-top:5px;"></div>
+</div>
+
+<!-- SADE LİSTE -->
+<div id="sec-sade" class="sec page">
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+    <input id="sl_srch" placeholder="Ad ile ara..." oninput="renderSade()" style="font-size:12px;padding:7px 10px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;flex:1;min-width:140px;">
+    <select id="sl_prog" onchange="renderSade()" style="font-size:12px;padding:7px 9px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;">
+      <option value="">Tüm programlar</option><option value="sinif">Sınıf eğitimi</option><option value="ozel">Özel ders</option><option value="kocluk">Koçluk</option><option value="deneme">Deneme kulübü</option>
+    </select>
+    <select id="sl_sinif" onchange="renderSade()" style="font-size:12px;padding:7px 9px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;">
+      <option value="">Tüm sınıflar</option><option value="5">5.</option><option value="6">6.</option><option value="7">7.</option><option value="8">8.</option>
+    </select>
+    <select id="sl_cinsiyet" onchange="renderSade()" style="font-size:12px;padding:7px 9px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;">
+      <option value="">Tüm cinsiyetler</option><option value="kiz">👧 Kız</option><option value="erkek">👦 Erkek</option>
+    </select>
+    <button class="btn" onclick="sadeExcel()" style="background:#185fa5;color:#fff;border-color:#185fa5;font-size:11px;padding:7px 12px;">📊 Excel'e aktar</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px;" id="sl_metrikler"></div>
+
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Ad Soyad</th>
+          <th>Cinsiyet</th>
+          <th>Program</th>
+          <th>Sınıf</th>
+          <th>Okul</th>
+          <th>Veli</th>
+          <th>Telefon</th>
+          <th>Kayıt Tarihi</th>
+          <th>Notlar</th>
+        </tr>
+      </thead>
+      <tbody id="sade_tbl"></tbody>
+    </table>
+  </div>
+  <div id="sl_cnt" style="font-size:11px;color:#0f6e56;margin-top:5px;"></div>
+</div>
+
+<!-- ÖDEMELER -->
+<div id="sec-odemeler" class="sec page">
+  <select id="od_sec" onchange="renderT()" style="font-size:13px;padding:8px 10px;border-radius:8px;border:0.5px solid #5dcaa5;background:#f0faf6;color:#04342c;width:100%;margin-bottom:10px;">
+    <option value="">-- Öğrenci seçin --</option>
+  </select>
+  <div id="t_panel"><p class="empty-state">Öğrenci seçin.</p></div>
+  <div class="card" style="margin-top:10px;">
+    <p class="ph">Ödeme uyarıları</p>
+    <div id="od_uyari"></div>
+  </div>
+</div>
+
+<!-- ÖZET -->
+<div id="sec-ozet" class="sec page">
+  <div class="grid5" style="margin-bottom:1rem;">
+    <div class="metric"><p class="ml">Toplam gelir</p><p class="mv" style="color:#185fa5;" id="oz_gel">0 ₺</p></div>
+    <div class="metric"><p class="ml">Tahsilat</p><p class="mv" style="color:#0f6e56;" id="oz_tah">0 ₺</p></div>
+    <div class="metric"><p class="ml">Bekleyen</p><p class="mv" style="color:#ba7517;" id="oz_bek">0 ₺</p></div>
+    <div class="metric"><p class="ml">Öğrenci başı ort.</p><p class="mv" id="oz_ort">0 ₺</p></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
+    <div class="metric" style="border-color:#f0b8e0;">
+      <p class="ml">👧 Kız öğrenci</p>
+      <p class="mv" style="color:#8b1a5e;" id="oz_kiz">0</p>
+      <p style="font-size:10px;color:#5dcaa5;margin-top:2px;" id="oz_kiz_pct"></p>
+    </div>
+    <div class="metric" style="border-color:#b8d4f0;">
+      <p class="ml">👦 Erkek öğrenci</p>
+      <p class="mv" style="color:#0c3472;" id="oz_erkek">0</p>
+      <p style="font-size:10px;color:#5dcaa5;margin-top:2px;" id="oz_erkek_pct"></p>
+    </div>
+  </div>
+  <div class="card"><p class="ph">Program bazlı gelir</p><div id="prog_oz"></div></div>
+  <div class="card"><p class="ph">Sınıf bazlı dağılım</p><div id="sinif_oz"></div></div>
+  <div class="card"><p class="ph">Ücret dağılımı</p><div id="ucret_dag"></div></div>
+</div>
+
+<!-- GİDERLER -->
+<div id="sec-gider" class="sec page">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <p class="ph" style="margin:0;">Öğretmenler <span style="font-size:10px;color:#5dcaa5;font-weight:400;">aylık brüt · ×12 · +%30 SGK</span></p>
+      <button class="btn" onclick="addTeacher()" style="font-size:11px;">+ Ekle</button>
+    </div>
+    <div id="tchr_list"></div>
+    <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid #9fe1cb;font-size:12px;margin-top:4px;">
+      <span style="color:#085041;">Yıllık öğretmen maliyeti</span><span style="font-weight:500;color:#a32d2d;" id="g_ogr">0 ₺</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="ph">Diğer personel <span style="font-size:10px;color:#5dcaa5;font-weight:400;">aylık brüt · ×12 · +%30 SGK</span></p>
+    <div class="grid2" style="margin-bottom:8px;">
+      <div class="fg"><label>Müdür yardımcısı</label><input type="number" id="g_myd" value="50000" step="1000" oninput="gChg()"></div>
+      <div class="fg"><label>Eğitim koordinatörü</label><input type="number" id="g_eko" value="45000" step="1000" oninput="gChg()"></div>
+      <div class="fg"><label>Rehber öğretmen</label><input type="number" id="g_reh" value="40000" step="1000" oninput="gChg()"></div>
+      <div class="fg"><label>Diğer personel</label><input type="number" id="g_dpr" value="30000" step="1000" oninput="gChg()"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid #9fe1cb;font-size:12px;">
+      <span style="color:#085041;">Yıllık diğer personel</span><span style="font-weight:500;color:#a32d2d;" id="g_dp">0 ₺</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="ph">Sabit giderler <span style="font-size:10px;color:#5dcaa5;font-weight:400;">aylık · ×12</span></p>
+    <div class="grid2" style="margin-bottom:8px;">
+      <div class="fg"><label>Kira</label><input type="number" id="g_kira" value="80000" step="5000" oninput="gChg()"></div>
+      <div class="fg"><label>Elektrik</label><input type="number" id="g_elek" value="15000" step="1000" oninput="gChg()"></div>
+      <div class="fg"><label>Su / doğalgaz</label><input type="number" id="g_su" value="5000" step="500" oninput="gChg()"></div>
+      <div class="fg"><label>İnternet / telefon</label><input type="number" id="g_int" value="3000" step="500" oninput="gChg()"></div>
+      <div class="fg"><label>Temizlik / güvenlik</label><input type="number" id="g_tem" value="10000" step="1000" oninput="gChg()"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid #9fe1cb;font-size:12px;">
+      <span style="color:#085041;">Yıllık sabit gider</span><span style="font-weight:500;color:#a32d2d;" id="g_sbt">0 ₺</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="ph">Pazarlama & diğer <span style="font-size:10px;color:#5dcaa5;font-weight:400;">yıllık</span></p>
+    <div class="grid2" style="margin-bottom:8px;">
+      <div class="fg"><label>Sosyal medya reklamları</label><input type="number" id="g_smr" value="150000" step="10000" oninput="gChg()"></div>
+      <div class="fg"><label>Ajans / içerik</label><input type="number" id="g_aj" value="60000" step="5000" oninput="gChg()"></div>
+      <div class="fg"><label>Muhasebe / mali müşavir</label><input type="number" id="g_muh" value="60000" step="5000" oninput="gChg()"></div>
+      <div class="fg"><label>Kırtasiye / teknoloji</label><input type="number" id="g_krt" value="70000" step="5000" oninput="gChg()"></div>
+      <div class="fg"><label>Bakım / temsil / diğer</label><input type="number" id="g_dg" value="90000" step="5000" oninput="gChg()"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid #9fe1cb;font-size:12px;">
+      <span style="color:#085041;">Yıllık pazarlama & diğer</span><span style="font-weight:500;color:#a32d2d;" id="g_paz">0 ₺</span>
+    </div>
+  </div>
+  <div style="background:#085041;border-radius:12px;padding:1rem 1.25rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:14px;font-weight:600;color:#9fe1cb;">Toplam yıllık gider</span>
+      <span style="font-size:22px;font-weight:600;color:#fff;" id="g_top">0 ₺</span>
+    </div>
+  </div>
+</div>
+
+<!-- KAR/ZARAR -->
+<div id="sec-karzarar" class="sec page">
+  <div class="grid5" style="margin-bottom:1rem;">
+    <div class="metric"><p class="ml">Toplam gelir</p><p class="mv" style="color:#185fa5;" id="kz_gel">0 ₺</p></div>
+    <div class="metric"><p class="ml">Toplam gider</p><p class="mv" style="color:#a32d2d;" id="kz_gid">0 ₺</p></div>
+    <div class="metric"><p class="ml">Vergi öncesi kar</p><p class="mv" id="kz_kon">0 ₺</p><p style="font-size:10px;color:#5dcaa5;margin-top:2px;" id="kz_mon"></p></div>
+    <div class="metric"><p class="ml">Kurumlar vergisi (%25)</p><p class="mv" style="color:#a32d2d;" id="kz_ver">0 ₺</p></div>
+  </div>
+  <div style="background:#fff;border:2px solid #1d9e75;border-radius:12px;padding:1.25rem;margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+      <span style="font-size:15px;font-weight:600;color:#04342c;">Net kar (vergi sonrası)</span>
+      <span style="font-size:26px;font-weight:600;" id="kz_net">0 ₺</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:11px;color:#5dcaa5;">Net kar marjı</span>
+      <span style="font-size:13px;font-weight:600;" id="kz_marj">—</span>
+    </div>
+    <div style="height:8px;background:#c8f0e4;border-radius:4px;overflow:hidden;">
+      <div id="kz_bar" style="height:100%;border-radius:4px;width:0%;background:#0f6e56;transition:width .3s;"></div>
+    </div>
+  </div>
+  <div class="card">
+    <p class="ph">Detaylı özet</p>
+    <div class="summary-row"><span style="color:#085041;">Öğretmenler (SGK dahil)</span><span id="kz_o" style="color:#a32d2d;font-weight:500;"></span></div>
+    <div class="summary-row"><span style="color:#085041;">Diğer personel (SGK dahil)</span><span id="kz_d" style="color:#a32d2d;font-weight:500;"></span></div>
+    <div class="summary-row"><span style="color:#085041;">Sabit giderler</span><span id="kz_s" style="color:#a32d2d;font-weight:500;"></span></div>
+    <div class="summary-row"><span style="color:#085041;">Pazarlama & diğer</span><span id="kz_p" style="color:#a32d2d;font-weight:500;"></span></div>
+    <div class="summary-row"><span style="font-weight:600;color:#04342c;">Toplam gider</span><span id="kz_tg" style="font-weight:600;color:#a32d2d;"></span></div>
+    <div class="summary-row"><span style="color:#085041;">Vergi öncesi kar</span><span id="kz_ko" style="font-weight:500;"></span></div>
+    <div class="summary-row"><span style="color:#085041;">Kurumlar vergisi</span><span id="kz_kv" style="font-weight:500;color:#a32d2d;"></span></div>
+    <div class="summary-row" style="font-size:14px;padding-top:8px;"><span style="font-weight:600;color:#04342c;">Net kar</span><span id="kz_nk" style="font-weight:600;"></span></div>
+    <div style="margin-top:10px;padding:10px;background:#e1f5ee;border-radius:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      <div><p style="font-size:10px;color:#5dcaa5;">Aylık net kar</p><p style="font-size:13px;font-weight:600;margin-top:2px;color:#04342c;" id="kz_ay"></p></div>
+      <div><p style="font-size:10px;color:#5dcaa5;">Gider/gelir oranı</p><p style="font-size:13px;font-weight:600;margin-top:2px;color:#04342c;" id="kz_or"></p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PN={sinif:'Sınıf eğitimi',ozel:'Özel ders',kocluk:'Koçluk',deneme:'Deneme kulübü'};
+const PC={sinif:'#3266ad',ozel:'#1d9e75',kocluk:'#ba7517',deneme:'#888780'};
+const DP={sinif:160000,ozel:120000,kocluk:120000,deneme:12000};
+let students=[],nId=1,teachers=[],nTId=1;
+const today=new Date();today.setHours(0,0,0,0);
+let saveTimer=null;
+
+// ── API KATMANI ────────────────────────────────────────────────
+const API = {
+  async get(url){ const r=await fetch(url); return r.json(); },
+  async post(url,data){ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); return r.json(); },
+  async put(url,data){ const r=await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); return r.json(); },
+  async del(url){ const r=await fetch(url,{method:'DELETE'}); return r.json(); },
+};
+
+function showSaveOk(){
+  const now=new Date().toLocaleTimeString('tr-TR');
+  document.getElementById('save_info').textContent='Son kayıt: '+now;
+  const ok=document.getElementById('save_ok');
+  ok.style.display='inline';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>ok.style.display='none',2500);
+}
+
+// Tek öğrenciyi sunucuya kaydet (taksit değişikliğinde çağrılır)
+async function syncOgrenci(s){
+  try{
+    await API.put('/api/ogrenciler/'+s.id, s);
+    showSaveOk();
+  }catch(e){console.error('Sync hatası:',e);}
+}
+
+// Giderleri kaydet
+async function kaydetGider(){
+  const gids={};
+  ['g_myd','g_eko','g_reh','g_dpr','g_kira','g_elek','g_su','g_int','g_tem','g_smr','g_aj','g_muh','g_krt','g_dg'].forEach(i=>{const el=document.getElementById(i);if(el)gids[i]=el.value;});
+  try{ await API.post('/api/ayarlar',gids); showSaveOk(); }catch(e){console.error(e);}
+}
+
+function kaydet(manual=false){ kaydetGider(); }
+function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>kaydetGider(),700);}
+
+async function yukle(){
+  try{
+    document.getElementById('save_info').textContent='Yükleniyor...';
+
+    // Öğrenciler
+    const ogrList = await API.get('/api/ogrenciler');
+    if(ogrList.length>0){
+      students = ogrList.map(o=>({...o, not:o['not']||'', kismi:o.kismi||[]}));
+      nId = Math.max(...students.map(s=>s.id))+1;
+    } else {
+      await defaultStudents();
+    }
+
+    // Öğretmenler
+    const ogrList2 = await API.get('/api/ogretmenler');
+    if(ogrList2.length>0){
+      teachers = ogrList2;
+      nTId = Math.max(...teachers.map(t=>t.id))+1;
+    } else {
+      await defaultTeachers();
+    }
+
+    // Giderler (ayarlar)
+    const ayarlar = await API.get('/api/ayarlar');
+    Object.keys(ayarlar).forEach(i=>{const el=document.getElementById(i);if(el)el.value=ayarlar[i];});
+
+    document.getElementById('save_info').textContent='Veriler yüklendi ✓';
+  }catch(e){
+    console.error('Yükleme hatası:',e);
+    document.getElementById('save_info').textContent='Bağlantı hatası — tekrar dene';
+  }
+}
+
+function gChg(){calcAll();autoSave();}
+
+// ── YARDIMCI ─────────────────────────────────────────────────
+function fmt(n){return Math.round(n).toLocaleString('tr-TR')+' ₺';}
+function fmtS(n){if(Math.abs(n)>=1e6)return (n/1e6).toFixed(2)+' M₺';if(Math.abs(n)>=1000)return Math.round(n/1000)+'K ₺';return Math.round(n).toLocaleString('tr-TR')+' ₺';}
+function fmtD(d){if(!d)return '—';const dd=new Date(d);return isNaN(dd)?'—':dd.toLocaleDateString('tr-TR');}
+function pct(a,b){return b>0?'%'+Math.round(a/b*100):'—';}
+function vn(id){return parseFloat(document.getElementById(id).value)||0;}
+function tTah(t){return t.odendi?(t.gercekTutar!=null?t.gercekTutar:t.tutar):0;}
+function sTah(s){return s.taksitler.reduce((a,t)=>a+tTah(t)+(t.kismi||[]).reduce((b,k)=>b+k.tutar,0),0);}
+function tOdenen(t){return tTah(t)+(t.kismi||[]).reduce((a,k)=>a+k.tutar,0);}
+function tKalan(t){return Math.max(0,t.tutar-tOdenen(t));}
+
+function payStatus(s){
+  const p=s.taksitler.filter(t=>!t.odendi);
+  if(!p.length)return 'tamam';
+  const n=p.sort((a,b)=>a.no-b.no)[0];
+  if(!n.tarih)return 'tamam';
+  const d=new Date(n.tarih);d.setHours(0,0,0,0);
+  if(d<today)return 'geciken';
+  if(Math.ceil((d-today)/864e5)<=3)return 'yaklasan';
+  return 'tamam';
+}
+
+function T(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('vis'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('vis');
+  btn.classList.add('on');
+  if(id==='liste')renderL();
+  if(id==='sade')renderSade();
+  if(id==='ozet')renderOzet();
+  if(id==='odemeler'){fillOdSec();renderUyari();}
+  if(id==='gider'||id==='karzarar')calcAll();
+}
+function updateF(){document.getElementById('f_ucret').value=DP[document.getElementById('f_prog').value];}
+
+function mkTaksit(ucret,sayi,odenanlar){
+  const t=Math.round(ucret/sayi);
+  return Array.from({length:sayi},(_,i)=>{
+    const g=odenanlar&&odenanlar[i]?odenanlar[i]:0;
+    return {no:i+1,tutar:i===sayi-1?ucret-(t*(sayi-1)):t,tarih:null,odendi:g>0,odenmeTarih:g>0?'':null,gercekTutar:g||null,kismi:[]};
+  });
+}
+function normProg(s){if(!s)return 'sinif';s=s.toString().toLowerCase();if(s.includes('özel')||s.includes('ozel'))return 'ozel';if(s.includes('koç')||s.includes('koc'))return 'kocluk';if(s.includes('deneme'))return 'deneme';return 'sinif';}
+function normSinif(s){if(!s)return '8';const n=s.toString().match(/\d+/);if(!n)return '8';return ['5','6','7','8'].includes(n[0])?n[0]:'8';}
+
+async function addSt(){
+  const ad=document.getElementById('f_ad').value.trim();
+  const err=document.getElementById('f_err');
+  if(!ad){err.textContent='Ad Soyad zorunludur.';err.style.display='block';return;}
+  err.style.display='none';
+  const ucret=parseFloat(document.getElementById('f_ucret').value)||0;
+  const sayi=parseInt(document.getElementById('f_taksit').value)||1;
+  const ilk=document.getElementById('f_ilk').value;
+  const taksitler=mkTaksit(ucret,sayi,[]);
+  if(ilk){const d=new Date(ilk);taksitler.forEach((t,i)=>{const dd=new Date(d);dd.setMonth(dd.getMonth()+i);t.tarih=dd.toISOString().split('T')[0];});}
+  const yeni={
+    ad, prog:document.getElementById('f_prog').value,
+    sinif:document.getElementById('f_sinif').value,
+    cinsiyet:document.getElementById('f_cinsiyet').value,
+    ucret, tarih:document.getElementById('f_tarih').value,
+    veli:document.getElementById('f_veli').value.trim(),
+    tel:document.getElementById('f_tel').value.trim(),
+    okul:document.getElementById('f_okul').value.trim(),
+    not:document.getElementById('f_not').value.trim(),
+    taksitler
+  };
+  try{
+    const kayitli = await API.post('/api/ogrenciler', yeni);
+    students.push(kayitli);
+    nId = Math.max(nId, kayitli.id+1);
+    ['f_ad','f_veli','f_tel','f_okul','f_not'].forEach(id=>document.getElementById(id).value='');
+    updateAll();
+    showSaveOk();
+  }catch(e){err.textContent='Kayıt hatası: '+e.message;err.style.display='block';}
+}
+
+async function delSt(id){
+  if(!confirm('Bu öğrenciyi silmek istediğinize emin misiniz?'))return;
+  try{
+    await API.del('/api/ogrenciler/'+id);
+    students=students.filter(s=>s.id!==id);
+    updateAll();renderL();showSaveOk();
+  }catch(e){alert('Silme hatası: '+e.message);}
+}
+
+function updateAll(){
+  const total=students.reduce((a,s)=>a+s.ucret,0);
+  const tah=students.reduce((a,s)=>a+sTah(s),0);
+  const gec=students.reduce((a,s)=>a+s.taksitler.filter(t=>!t.odendi&&t.tarih&&new Date(t.tarih)<today).reduce((b,t)=>b+tKalan(t),0),0);
+  document.getElementById('m_top').textContent=students.length;
+  document.getElementById('m_gel').textContent=fmtS(total);
+  document.getElementById('m_tah').textContent=fmtS(tah);
+  document.getElementById('m_bek').textContent=fmtS(total-tah);
+  document.getElementById('m_gec').textContent=fmtS(gec);
+  ['sinif','ozel','kocluk','deneme'].forEach(p=>{
+    const cnt=students.filter(s=>s.prog===p).length;
+    document.getElementById('c_'+p).textContent=cnt;
+    const ref={sinif:104,ozel:20,kocluk:10,deneme:120};
+    document.getElementById('b_'+p).style.width=Math.min(cnt/ref[p]*100,100)+'%';
+  });
+  renderSon();renderUyari();fillOdSec();calcAll();
+}
+
+function renderSon(){
+  const el=document.getElementById('son_k');
+  const lst=[...students].reverse().slice(0,8);
+  if(!lst.length){el.innerHTML='<p class="empty-state">Henüz kayıt yok.</p>';return;}
+  el.innerHTML=lst.map(s=>{
+    const st=payStatus(s);const tah=sTah(s);
+    const nx=s.taksitler.filter(t=>!t.odendi).sort((a,b)=>a.no-b.no)[0];
+    let wb='';
+    if(st==='geciken')wb=`<span class="badge" style="background:#fcebeb;color:#791f1f;margin-left:4px;">⚠ Gecikmiş</span>`;
+    else if(st==='yaklasan')wb=`<span class="badge" style="background:#faeeda;color:#633806;margin-left:4px;">⏰${nx&&nx.tarih?' '+fmtD(nx.tarih):''}</span>`;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid #c8f0e4;">
+      <div><span style="font-size:13px;font-weight:600;color:#04342c;">${s.ad}</span>
+        <span class="badge" style="background:${PC[s.prog]}20;color:${PC[s.prog]};margin-left:6px;">${PN[s.prog]}</span>
+        <span class="badge" style="background:#e1f5ee;color:#085041;margin-left:4px;">${s.sinif}. Sınıf</span>${wb}</div>
+      <div style="text-align:right;"><div style="font-size:13px;font-weight:600;color:#185fa5;">${fmt(s.ucret)}</div>
+        <div style="font-size:10px;color:#0f6e56;">Tahsilat: ${fmt(tah)}</div></div></div>`;
+  }).join('');
+}
+
+function renderL(){
+  const srch=(document.getElementById('srch').value||'').toLowerCase();
+  const fp=document.getElementById('fp').value,fs=document.getElementById('fs').value,fo=document.getElementById('fo').value,fc=document.getElementById('fc').value;
+  let fl=students.filter(s=>{
+    if(srch&&!s.ad.toLowerCase().includes(srch))return false;
+    if(fp&&s.prog!==fp)return false;if(fs&&s.sinif!==fs)return false;
+    if(fo&&payStatus(s)!==fo)return false;
+    if(fc&&s.cinsiyet!==fc)return false;
+    return true;
+  });
+  const tb=document.getElementById('st_tbl');
+  if(!fl.length){tb.innerHTML='<tr><td colspan="11" class="empty-state">Kayıt bulunamadı.</td></tr>';document.getElementById('l_cnt').textContent='';return;}
+  tb.innerHTML=fl.map((s,i)=>{
+    const st=payStatus(s),tah=sTah(s),kal=s.ucret-tah;
+    const nx=s.taksitler.filter(t=>!t.odendi).sort((a,b)=>a.no-b.no)[0];
+    let rc='';if(st==='geciken')rc='overdue-row';else if(st==='yaklasan')rc='warn-row';
+    let sb='';
+    if(st==='geciken')sb=`<span class="badge" style="background:#fcebeb;color:#791f1f;">⚠ Gecikmiş</span>`;
+    else if(st==='yaklasan')sb=`<span class="badge" style="background:#faeeda;color:#633806;">⏰ Yaklaşan</span>`;
+    else sb=`<span class="badge" style="background:#e1f5ee;color:#085041;">✓ Tamam</span>`;
+    return `<tr class="${rc}">
+      <td style="color:#5dcaa5;">${i+1}</td><td style="font-weight:600;">${s.ad}</td>
+      <td>${s.cinsiyet==='kiz'?'<span class="badge" style="background:#fce4f3;color:#8b1a5e;">👧 Kız</span>':'<span class="badge" style="background:#ddeeff;color:#0c3472;">👦 Erkek</span>'}</td>
+      <td><span class="badge" style="background:${PC[s.prog]}20;color:${PC[s.prog]};">${PN[s.prog]}</span></td>
+      <td>${s.sinif}. Sınıf</td><td style="font-size:11px;color:#085041;">${s.okul||'—'}</td><td style="font-weight:600;">${fmt(s.ucret)}</td>
+      <td style="color:#0f6e56;">${fmt(tah)}</td>
+      <td style="color:${kal>0?'#a32d2d':'#0f6e56'};">${fmt(kal)}</td>
+      <td style="font-size:11px;">${nx&&nx.tarih?fmtD(nx.tarih):'—'}</td>
+      <td>${sb}</td>
+      <td style="font-size:11px;color:#5dcaa5;">${s.tarih?fmtD(s.tarih):'—'}</td>
+      <td><button class="btn btn-danger" onclick="delSt(${s.id})" style="padding:3px 8px;font-size:11px;">🗑</button></td></tr>`;
+  }).join('');
+  document.getElementById('l_cnt').textContent=fl.length+' kayıt';
+}
+
+function fillOdSec(){
+  const sel=document.getElementById('od_sec'),cur=sel.value;
+  sel.innerHTML='<option value="">-- Öğrenci seçin --</option>'+
+    students.map(s=>{const st=payStatus(s);return `<option value="${s.id}">${s.ad}${st==='geciken'?' ⚠':st==='yaklasan'?' ⏰':''} — ${fmt(s.ucret)}</option>`;}).join('');
+  if(cur)sel.value=cur;
+}
+
+function renderT(){
+  const id=parseInt(document.getElementById('od_sec').value);
+  const panel=document.getElementById('t_panel');
+  if(!id){panel.innerHTML='<p class="empty-state">Öğrenci seçin.</p>';return;}
+  const s=students.find(x=>x.id===id);if(!s)return;
+  const tah=sTah(s),kal=s.ucret-tah;
+  panel.innerHTML=`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+      <div><span style="font-size:14px;font-weight:600;color:#04342c;">${s.ad}</span>
+        <span class="badge" style="background:${PC[s.prog]}20;color:${PC[s.prog]};margin-left:8px;">${PN[s.prog]}</span>
+        <span class="badge" style="background:#e1f5ee;color:#085041;margin-left:4px;">${s.sinif}. Sınıf</span></div>
+      <div style="text-align:right;font-size:12px;">
+        <div style="color:#0f6e56;">Tahsilat: <strong>${fmt(tah)}</strong> / ${fmt(s.ucret)}</div>
+        <div style="color:${kal>0?'#a32d2d':'#0f6e56'};">Kalan: <strong>${fmt(kal)}</strong></div></div></div>
+    <div style="height:7px;background:#c8f0e4;border-radius:4px;overflow:hidden;margin-bottom:14px;">
+      <div style="height:100%;width:${s.ucret>0?Math.min(tah/s.ucret*100,100):0}%;background:#0f6e56;border-radius:4px;transition:width .3s;"></div></div>
+    <div>${s.taksitler.map((t,i)=>{
+      const od=tOdenen(t),kl=tKalan(t);
+      const d=t.tarih?new Date(t.tarih):null;if(d)d.setHours(0,0,0,0);
+      const gec=!t.odendi&&d&&d<today,ykl=!t.odendi&&d&&!gec&&Math.ceil((d-today)/864e5)<=3;
+      const kv=(t.kismi||[]).length>0;
+      const hBg=t.odendi?'#e1f5ee':gec?'#fcebeb':ykl?'#faeeda':'#f0faf6';
+      const hBo=t.odendi?'#9fe1cb':gec?'#f09595':ykl?'#ef9f27':'#9fe1cb';
+      const tc=t.odendi?'#085041':gec?'#791f1f':ykl?'#633806':'#04342c';
+      let dur='';
+      if(t.odendi)dur=`<span class="badge" style="background:#e1f5ee;color:#085041;padding:4px 9px;">✓ Ödendi${t.gercekTutar&&t.gercekTutar!==t.tutar?' ('+fmt(t.gercekTutar)+')':''}</span><button class="btn" onclick="geriAl(${id},${i})" style="font-size:10px;padding:3px 8px;margin-left:4px;">Geri al</button>`;
+      else if(kv&&kl===0)dur=`<span class="badge" style="background:#e1f5ee;color:#085041;padding:4px 9px;">✓ Tamamlandı</span>`;
+      else dur=`<button class="btn btn-primary" onclick="tamOde(${id},${i})" style="font-size:11px;padding:5px 12px;">✓ Tam ödendi</button><button class="btn btn-warn" onclick="kismiAc(${id},${i})" style="font-size:11px;padding:5px 12px;margin-left:4px;">💰 Kısmi</button>`;
+      let kl_lst='';
+      if(kv)kl_lst=(t.kismi||[]).map((k,ki)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:0.5px solid #fde8b0;font-size:11px;"><span style="color:#633806;">→ Kısmi ${ki+1}: <strong>${fmt(k.tutar)}</strong>${k.tarih?' · '+fmtD(k.tarih):''}</span><button onclick="kismiSil(${id},${i},${ki})" style="background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;padding:0 4px;line-height:1;">×</button></div>`).join('');
+      return `<div class="taksit-box" style="border-color:${hBo};">
+        <div class="t-main" style="background:${hBg};">
+          <span style="font-size:12px;color:#5dcaa5;min-width:20px;font-weight:600;">${t.no}.</span>
+          <div style="flex:1;">
+            <div style="font-weight:600;color:${tc};font-size:13px;">${fmt(t.tutar)}${kv&&!t.odendi?`<span style="font-size:10px;color:#ba7517;margin-left:8px;">Ödenen: ${fmt(od)} · Kalan: ${fmt(kl)}</span>`:''}</div>
+            ${kl_lst?`<div style="margin-top:5px;">${kl_lst}</div>`:''}
+          </div>
+          <input type="date" value="${t.tarih||''}" onchange="setTarih(${id},${i},this.value)" style="font-size:11px;padding:4px 7px;width:130px;border-radius:8px;border:0.5px solid #5dcaa5;background:#fff;color:#04342c;">
+          <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">${dur}</div>
+        </div>
+        <div id="kf_${id}_${i}" style="display:none;" class="t-kismi">
+          <span style="font-size:12px;color:#633806;font-weight:600;flex-shrink:0;">Kısmi tutar:</span>
+          <input type="number" id="kamt_${id}_${i}" placeholder="₺ tutar" min="1" step="100" style="font-size:12px;padding:5px 8px;border-radius:8px;border:0.5px solid #ef9f27;background:#fff;color:#04342c;width:120px;">
+          <input type="date" id="ktar_${id}_${i}" style="font-size:12px;padding:5px 8px;border-radius:8px;border:0.5px solid #ef9f27;background:#fff;color:#04342c;width:130px;">
+          <button class="btn" style="background:#f59f0b;color:#fff;border-color:#f59f0b;font-size:11px;padding:5px 12px;" onclick="kismiKaydet(${id},${i})">✓ Kaydet</button>
+          <button class="btn" style="font-size:11px;padding:5px 9px;" onclick="kismiKapat(${id},${i})">İptal</button>
+        </div></div>`;
+    }).join('')}</div></div>`;
+  s.taksitler.forEach((_,i)=>{const el=document.getElementById(`ktar_${id}_${i}`);if(el&&!el.value)el.valueAsDate=new Date();});
+}
+
+function tamOde(sid,i){const s=students.find(x=>x.id===sid);if(!s)return;const t=s.taksitler[i];t.odendi=true;t.odenmeTarih=new Date().toISOString().split('T')[0];t.gercekTutar=t.tutar;syncOgrenci(s);updateAll();renderT();renderL();}
+function geriAl(sid,i){const s=students.find(x=>x.id===sid);if(!s)return;const t=s.taksitler[i];t.odendi=false;t.odenmeTarih=null;t.gercekTutar=null;syncOgrenci(s);updateAll();renderT();renderL();}
+function kismiAc(sid,i){const el=document.getElementById(`kf_${sid}_${i}`);if(el)el.style.display='flex';}
+function kismiKapat(sid,i){const el=document.getElementById(`kf_${sid}_${i}`);if(el)el.style.display='none';}
+function kismiKaydet(sid,i){
+  const s=students.find(x=>x.id===sid);if(!s)return;const t=s.taksitler[i];
+  const ae=document.getElementById(`kamt_${sid}_${i}`),te=document.getElementById(`ktar_${sid}_${i}`);
+  const amt=parseFloat(ae.value)||0;if(amt<=0){ae.style.borderColor='#e24b4a';return;}ae.style.borderColor='#ef9f27';
+  if(!t.kismi)t.kismi=[];t.kismi.push({tutar:amt,tarih:te.value||new Date().toISOString().split('T')[0]});
+  if(tKalan(t)<=0){t.odendi=true;t.odenmeTarih=new Date().toISOString().split('T')[0];t.gercekTutar=t.tutar;}
+  syncOgrenci(s);updateAll();renderT();renderL();
+}
+function kismiSil(sid,i,ki){
+  const s=students.find(x=>x.id===sid);if(!s)return;const t=s.taksitler[i];
+  if(t.kismi)t.kismi.splice(ki,1);
+  if(t.odendi&&tKalan(t)>0){t.odendi=false;t.odenmeTarih=null;t.gercekTutar=null;}
+  syncOgrenci(s);updateAll();renderT();renderL();
+}
+function setTarih(sid,i,val){const s=students.find(x=>x.id===sid);if(s)s.taksitler[i].tarih=val||null;syncOgrenci(s);renderUyari();updateAll();}
+
+function renderUyari(){
+  const el=document.getElementById('od_uyari');if(!el)return;
+  const uy=[];
+  students.forEach(s=>s.taksitler.forEach(t=>{
+    if(t.odendi||!t.tarih)return;
+    const d=new Date(t.tarih);d.setHours(0,0,0,0);const diff=Math.ceil((d-today)/864e5);
+    if(d<today)uy.push({s,t,diff,tip:'geciken'});else if(diff<=3)uy.push({s,t,diff,tip:'yaklasan'});
+  }));
+  if(!uy.length){el.innerHTML='<p class="empty-state" style="padding:.5rem;">Ödeme uyarısı yok.</p>';return;}
+  el.innerHTML=uy.map(u=>{
+    const bg=u.tip==='geciken'?'#fcebeb':'#faeeda',tc=u.tip==='geciken'?'#791f1f':'#633806';
+    const lbl=u.tip==='geciken'?`${Math.abs(u.diff)} gün gecikmiş`:`${u.diff} gün kaldı`;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:${bg};border-radius:8px;margin-bottom:6px;">
+      <div><span style="font-size:13px;font-weight:600;color:${tc};">${u.s.ad}</span>
+        <span style="font-size:11px;color:#085041;margin-left:6px;">${u.t.no}. taksit${(u.t.kismi||[]).length?' · Ödenen: '+fmt(tOdenen(u.t)):''}</span></div>
+      <div style="text-align:right;"><div style="font-size:13px;font-weight:600;color:${tc};">Kalan: ${fmt(tKalan(u.t))}</div>
+        <div style="font-size:10px;color:${tc};">${lbl}</div></div></div>`;
+  }).join('');
+}
+
+function renderOzet(){
+  const total=students.reduce((a,s)=>a+s.ucret,0);
+  const tah=students.reduce((a,s)=>a+sTah(s),0);
+  document.getElementById('oz_gel').textContent=fmtS(total);
+  document.getElementById('oz_tah').textContent=fmtS(tah);
+  document.getElementById('oz_bek').textContent=fmtS(total-tah);
+  document.getElementById('oz_ort').textContent=students.length>0?fmt(Math.round(total/students.length)):'0 ₺';
+  const kizSay=students.filter(s=>s.cinsiyet==='kiz').length;
+  const erkekSay=students.filter(s=>s.cinsiyet==='erkek').length;
+  const topSay=students.length;
+  document.getElementById('oz_kiz').textContent=kizSay;
+  document.getElementById('oz_erkek').textContent=erkekSay;
+  document.getElementById('oz_kiz_pct').textContent=topSay>0?'%'+Math.round(kizSay/topSay*100)+' · Gelir: '+fmtS(students.filter(s=>s.cinsiyet==='kiz').reduce((a,s)=>a+s.ucret,0)):'';
+  document.getElementById('oz_erkek_pct').textContent=topSay>0?'%'+Math.round(erkekSay/topSay*100)+' · Gelir: '+fmtS(students.filter(s=>s.cinsiyet==='erkek').reduce((a,s)=>a+s.ucret,0)):'';
+  document.getElementById('prog_oz').innerHTML=['sinif','ozel','kocluk','deneme'].map(p=>{
+    const ps=students.filter(s=>s.prog===p),pT=ps.reduce((a,s)=>a+s.ucret,0);
+    const pOrt=ps.length>0?Math.round(pT/ps.length):0,sh=total>0?Math.round(pT/total*100):0;
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:12px;font-weight:600;">${PN[p]}</span><span style="font-size:12px;color:#185fa5;font-weight:600;">${fmtS(pT)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#5dcaa5;margin-bottom:4px;"><span>${ps.length} öğrenci · Ort: ${fmt(pOrt)}</span><span>%${sh}</span></div>
+      <div class="prog-bar-wrap" style="height:6px;"><div class="prog-bar" style="width:${sh}%;background:${PC[p]};"></div></div></div>`;
+  }).join('');
+  document.getElementById('sinif_oz').innerHTML=['5','6','7','8'].map(sf=>{
+    const ss=students.filter(s=>s.sinif===sf),sT=ss.reduce((a,s)=>a+s.ucret,0),sOrt=ss.length>0?Math.round(sT/ss.length):0;
+    return `<div class="summary-row"><span style="color:#085041;">${sf}. Sınıf</span><span>${ss.length} öğrenci</span><span style="color:#085041;">Ort: ${fmt(sOrt)}</span><span style="font-weight:600;color:#185fa5;">${fmtS(sT)}</span></div>`;
+  }).join('');
+  const bands=[{l:'200K+',min:200000},{l:'150-200K',min:150000,max:200000},{l:'100-150K',min:100000,max:150000},{l:'50-100K',min:50000,max:100000},{l:'0-50K',min:0,max:50000}];
+  document.getElementById('ucret_dag').innerHTML=bands.map(b=>{
+    const cnt=students.filter(s=>s.ucret>=b.min&&(b.max===undefined||s.ucret<b.max)).length;
+    const w=students.length>0?Math.round(cnt/students.length*100):0;
+    return `<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:#085041;">${b.l} ₺</span><span>${cnt} öğrenci (%${w})</span></div><div class="prog-bar-wrap" style="height:6px;"><div class="prog-bar" style="width:${w}%;background:#0f6e56;"></div></div></div>`;
+  }).join('');
+}
+
+async function addTeacher(){
+  try{
+    const t=await API.post('/api/ogretmenler',{ad:'Yeni Öğretmen',maas:30000});
+    teachers.push(t);nTId=Math.max(nTId,t.id+1);
+    renderTeachers();calcAll();showSaveOk();
+  }catch(e){alert('Eklenemedi: '+e.message);}
+}
+async function delTeacher(id){
+  if(!confirm('Bu öğretmeni silmek istediğinize emin misiniz?'))return;
+  try{
+    await API.del('/api/ogretmenler/'+id);
+    teachers=teachers.filter(t=>t.id!==id);renderTeachers();calcAll();showSaveOk();
+  }catch(e){alert('Silinemedi: '+e.message);}
+}
+function renderTeachers(){
+  const el=document.getElementById('tchr_list');
+  if(!teachers.length){el.innerHTML='<p style="font-size:12px;color:#5dcaa5;margin-bottom:8px;">+ Ekle butonuyla öğretmen ekleyin.</p>';return;}
+  el.innerHTML=teachers.map(t=>`<div class="teacher-row">
+    <div class="fg"><label>Ad / Branş</label><input type="text" value="${t.ad}" onchange="teachers.find(x=>x.id===${t.id}).ad=this.value;API.put('/api/ogretmenler/${t.id}',{ad:this.value}).then(()=>showSaveOk());"></div>
+    <div class="fg"><label>Aylık brüt (₺)</label><input type="number" value="${t.maas}" step="1000" min="0" style="text-align:right;" onchange="teachers.find(x=>x.id===${t.id}).maas=parseFloat(this.value)||0;calcAll();API.put('/api/ogretmenler/${t.id}',{maas:parseFloat(this.value)||0}).then(()=>showSaveOk());"></div>
+    <div class="fg"><label>Yıllık maliyet</label><div style="font-size:13px;padding:7px 9px;color:#a32d2d;font-weight:600;">${fmt(t.maas*12*1.3)}</div></div>
+    <div class="fg"><label style="visibility:hidden;">-</label><button class="btn btn-danger" onclick="delTeacher(${t.id})" style="padding:7px 12px;">🗑</button></div>
+  </div>`).join('');
+}
+
+function calcAll(){
+  const tGel=students.reduce((a,s)=>a+s.ucret,0);
+  const gO=teachers.reduce((a,t)=>a+t.maas,0)*12*1.3;
+  const gD=(vn('g_myd')+vn('g_eko')+vn('g_reh')+vn('g_dpr'))*12*1.3;
+  const gS=(vn('g_kira')+vn('g_elek')+vn('g_su')+vn('g_int')+vn('g_tem'))*12;
+  const gP=vn('g_smr')+vn('g_aj')+vn('g_muh')+vn('g_krt')+vn('g_dg');
+  const tGid=gO+gD+gS+gP;
+  const kOn=tGel-tGid,ver=Math.max(kOn*0.25,0),net=kOn-ver;
+  const nM=tGel>0?Math.round(net/tGel*100):0;
+  const S=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  S('g_ogr',fmt(gO));S('g_dp',fmt(gD));S('g_sbt',fmt(gS));S('g_paz',fmt(gP));S('g_top',fmt(tGid));
+  S('kz_gel',fmtS(tGel));S('kz_gid',fmt(tGid));
+  const ke=document.getElementById('kz_kon');if(ke){ke.textContent=fmt(kOn);ke.style.color=kOn>=0?'#04342c':'#a32d2d';}
+  const me=document.getElementById('kz_mon');if(me)me.textContent='Marj: '+pct(kOn,tGel);
+  S('kz_ver',fmt(ver));
+  const ne=document.getElementById('kz_net');if(ne){ne.textContent=fmt(net);ne.style.color=net>=0?'#0f6e56':'#a32d2d';}
+  const mae=document.getElementById('kz_marj');if(mae)mae.textContent=tGel>0?'%'+nM:'—';
+  const be=document.getElementById('kz_bar');if(be){be.style.width=Math.max(0,Math.min(nM,100))+'%';be.style.background=net>=0?'#0f6e56':'#e24b4a';}
+  S('kz_o',fmt(gO));S('kz_d',fmt(gD));S('kz_s',fmt(gS));S('kz_p',fmt(gP));S('kz_tg',fmt(tGid));
+  const koe=document.getElementById('kz_ko');if(koe){koe.textContent=fmt(kOn);koe.style.color=kOn>=0?'#04342c':'#a32d2d';}
+  S('kz_kv',fmt(ver));
+  const nke=document.getElementById('kz_nk');if(nke){nke.textContent=fmt(net);nke.style.color=net>=0?'#0f6e56':'#a32d2d';}
+  S('kz_ay',fmt(net/12)+' / ay');S('kz_or',pct(tGid,tGel));
+}
+
+function importXls(inp){
+  const file=inp.files[0];if(!file)return;
+  const log=document.getElementById('xls_log');log.textContent='Okunuyor...';
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      let rows=[];
+      if(file.name.endsWith('.csv')){
+        const txt=new TextDecoder('utf-8').decode(e.target.result);
+        rows=txt.split('\n').map(r=>r.split(/[,;]/).map(c=>c.trim().replace(/^"|"$/g,'')));
+      }else{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+      }
+      if(rows.length<2){log.textContent='Veri bulunamadı.';return;}
+      const hdr=rows[0].map(h=>h.toString().toLowerCase());
+      const ci={
+        ad:hdr.findIndex(h=>h.includes('ad')||h.includes('isim')||h.includes('name')),
+        prog:hdr.findIndex(h=>h.includes('prog')||h.includes('program')),
+        sinif:hdr.findIndex(h=>h.includes('sınıf')||h.includes('sinif')||h.includes('class')),
+        ucret:hdr.findIndex(h=>h.includes('ücret')||h.includes('ucret')||h.includes('tutar')||h.includes('fee')),
+        taksit:hdr.findIndex(h=>h.includes('taksit')),
+        tarih:hdr.findIndex(h=>h.includes('tarih')||h.includes('kayıt')||h.includes('date')),
+      };
+      let yeniListesi=[];
+      rows.slice(1).forEach(row=>{
+        if(!row.some(c=>c.toString().trim()))return;
+        const ad=ci.ad>=0?row[ci.ad].toString().trim():'';
+        if(!ad||ad.match(/^[0-9.]+$/)){skipped++;return;}
+        const ucret=ci.ucret>=0?parseFloat(row[ci.ucret].toString().replace(/[^0-9.]/g,''))||0:0;
+        if(ucret===0){skipped++;return;}
+        const prog=normProg(ci.prog>=0?row[ci.prog].toString():'sinif');
+        const sinif=normSinif(ci.sinif>=0?row[ci.sinif].toString():'8');
+        const ts=ci.taksit>=0?parseInt(row[ci.taksit])||1:1;
+        yeniListesi.push({ad,prog,sinif,cinsiyet:tahminCinsiyet(ad),okul:'',ucret,tarih:ci.tarih>=0?row[ci.tarih].toString().trim():'',veli:'',tel:'',not:'',taksitler:mkTaksit(ucret,ts,[])});
+        added++;
+      });
+      // Toplu API kaydı
+      if(yeniListesi.length>0){
+        const kaydedilenler = await API.post('/api/ogrenciler/toplu', yeniListesi);
+        students.push(...kaydedilenler);
+        nId = Math.max(nId, ...kaydedilenler.map(o=>o.id+1));
+      }
+      log.innerHTML=`<span style="color:#0f6e56;">✓ ${added} kayıt aktarıldı.</span>${skipped>0?` <span style="color:#a32d2d;">${skipped} satır atlandı.</span>`:''}`;
+      updateAll();showSaveOk();
+    }catch(err){log.innerHTML=`<span style="color:#a32d2d;">Hata: ${err.message}</span>`;}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── BAŞLANGIÇ VERİSİ ──────────────────────────────────────────
+const xB=new Date(1899,11,30);
+function xd(n){if(!n||isNaN(n))return null;return new Date(xB.getTime()+n*864e5).toISOString().split('T')[0];}
+function mk(arr){return arr.map(t=>({...t,kismi:t.kismi||[]}));}
+
+async function defaultTeachers(){
+  const list=[{ad:'Öğretmen 1',maas:35000},{ad:'Öğretmen 2',maas:32000},{ad:'Öğretmen 3',maas:32000}];
+  for(const t of list){
+    const kayitli=await API.post('/api/ogretmenler',t);
+    teachers.push(kayitli);
+  }
+  nTId=Math.max(...teachers.map(t=>t.id))+1;
+}
+async function defaultStudents(){
+  const raw=[
+    {ad:'FEYZA YILMAZ',s:'7',u:7500,t:mk([{no:1,tutar:7500,tarih:xd(46030),odendi:true,odenmeTarih:xd(46030),gercekTutar:7500}])},
+    {ad:'TUĞBERK BAĞİT',s:'6',u:55000,t:mk([{no:1,tutar:55000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:55000}])},
+    {ad:'DERİN NAZ PARMAKSIZ',s:'8',u:129000,t:mk([{no:1,tutar:20000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:20000},{no:2,tutar:20000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:20000},{no:3,tutar:20000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:20000},{no:4,tutar:40000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:40000},{no:5,tutar:14000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'AYÇA MELEK',s:'8',u:43000,t:mk([{no:1,tutar:43000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:43000}])},
+    {ad:'ARMİN ELA',s:'8',u:140000,t:mk([{no:1,tutar:140000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:143000}])},
+    {ad:'EFE ÇAKIR',s:'5',u:3750,t:mk([{no:1,tutar:3750,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'KUZEY ERİŞKEN',s:'8',u:154000,t:mk([{no:1,tutar:154000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'DERİN BAYRAM',s:'8',u:155000,t:mk([{no:1,tutar:155000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'ÇAĞAN ATLAS',s:'6',u:3750,t:mk([{no:1,tutar:3750,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'ECE CALAP',s:'8',u:154800,t:mk([{no:1,tutar:40000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:40000},{no:2,tutar:40000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:40000},{no:3,tutar:40000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:40000},{no:4,tutar:34800,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'ENVER ALP',s:'8',u:150000,t:mk([{no:1,tutar:30000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:30000},{no:2,tutar:30000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:30000},{no:3,tutar:90000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'AHMET SAİT DİRLİK',s:'8',u:120000,t:mk(Array.from({length:8},(_,i)=>({no:i+1,tutar:15000,tarih:null,odendi:i<4,odenmeTarih:i<4?'':null,gercekTutar:i<4?15000:null})))},
+    {ad:'YUSUF KÖSEOĞLU',s:'8',u:43000,t:mk([{no:1,tutar:43000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:43000}])},
+    {ad:'FEYZA CAN',s:'8',u:125000,t:mk([{no:1,tutar:20000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:20000},{no:2,tutar:15000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:15000},...Array.from({length:6},(_,i)=>({no:i+3,tutar:15000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'ÇAĞAN ILGAZ ÜNLÜ',s:'7',u:100000,t:mk([{no:1,tutar:30000,tarih:xd(46040),odendi:true,odenmeTarih:xd(46040),gercekTutar:30000},{no:2,tutar:30000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:30000},{no:3,tutar:40000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:40000}])},
+    {ad:'EGE TUNÇBACAK',s:'8',u:100000,t:mk([{no:1,tutar:34000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:34000},{no:2,tutar:33000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:33000},{no:3,tutar:33000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'MİRA YILMAZ',s:'7',u:118400,t:mk(Array.from({length:8},(_,i)=>({no:i+1,tutar:Math.round(118400/8),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null})))},
+    {ad:'AZRA AYYILDIZ',s:'8',u:120000,t:mk(Array.from({length:3},(_,i)=>({no:i+1,tutar:40000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null})))},
+    {ad:'İREM ÇİLİNGİR',s:'8',u:140000,t:mk(Array.from({length:8},(_,i)=>({no:i+1,tutar:Math.round(140000/8),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null})))},
+    {ad:'İKRA KOLBAŞI',s:'8',u:150000,t:mk([{no:1,tutar:45793,tarih:xd(45793),odendi:true,odenmeTarih:xd(45793),gercekTutar:45793},...Array.from({length:9},(_,i)=>({no:i+2,tutar:Math.round((150000-45793)/9),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'PELİN AVCI',s:'8',u:90000,t:mk([{no:1,tutar:50000,tarih:xd(46043),odendi:true,odenmeTarih:xd(46043),gercekTutar:50000},{no:2,tutar:40000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:40000}])},
+    {ad:'MUSTAFA EFE ACAR',s:'8',u:86000,t:mk([{no:1,tutar:43000,tarih:xd(46043),odendi:true,odenmeTarih:xd(46043),gercekTutar:43000},{no:2,tutar:43000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:43000}])},
+    {ad:'SANİYE ŞULE',s:'8',u:120000,t:mk([{no:1,tutar:31000,tarih:xd(46045),odendi:true,odenmeTarih:xd(46045),gercekTutar:31000},{no:2,tutar:25000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:3,tutar:31000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:4,tutar:33000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'ÇETİN TÜRKOĞLU',s:'8',u:129000,t:mk([{no:1,tutar:29000,tarih:xd(46045),odendi:true,odenmeTarih:xd(46045),gercekTutar:29000},{no:2,tutar:33000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:3,tutar:33000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:4,tutar:34000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'NAZIM POYRAZ DELİBAŞ',s:'7',u:100000,t:mk([{no:1,tutar:50000,tarih:xd(46046),odendi:true,odenmeTarih:xd(46046),gercekTutar:50000},{no:2,tutar:50000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'NERMİN EROĞLU',s:'7',u:74000,t:mk([{no:1,tutar:18500,tarih:xd(46046),odendi:true,odenmeTarih:xd(46046),gercekTutar:18500},{no:2,tutar:55500,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'MEHMET ASIM KOR',s:'8',u:129000,t:mk([{no:1,tutar:25000,tarih:xd(46046),odendi:true,odenmeTarih:xd(46046),gercekTutar:25000},{no:2,tutar:30000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:30000},{no:3,tutar:30000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:30000},{no:4,tutar:40000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'AYSU SERRA BAKKAL',s:'8',u:125000,t:mk([{no:1,tutar:25000,tarih:xd(46046),odendi:true,odenmeTarih:xd(46046),gercekTutar:25000},{no:2,tutar:34000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:34000},{no:3,tutar:33000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:33000},{no:4,tutar:33000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'MERT EREN GÖK',s:'8',u:110000,t:mk([{no:1,tutar:25000,tarih:xd(46049),odendi:true,odenmeTarih:xd(46049),gercekTutar:25000},{no:2,tutar:40000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:40000},{no:3,tutar:22500,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:4,tutar:22500,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'ÖYKÜ TOPKAYA',s:'8',u:180000,t:mk([{no:1,tutar:15000,tarih:xd(46049),odendi:true,odenmeTarih:xd(46049),gercekTutar:15000},{no:2,tutar:15000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:15000},{no:3,tutar:15000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:15000},...Array.from({length:9},(_,i)=>({no:i+4,tutar:15000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'DORUK ATA',s:'8',u:75000,t:mk([{no:1,tutar:25000,tarih:xd(46049),odendi:true,odenmeTarih:xd(46049),gercekTutar:25000},{no:2,tutar:25000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:25000},{no:3,tutar:25000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'ELA ALIŞ',s:'8',u:103000,t:mk([{no:1,tutar:25000,tarih:xd(46049),odendi:true,odenmeTarih:xd(46049),gercekTutar:25000},{no:2,tutar:28000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:28000},{no:3,tutar:50000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'ALP KUZUCUK',s:'8',u:120000,t:mk([{no:1,tutar:20000,tarih:xd(46050),odendi:true,odenmeTarih:xd(46050),gercekTutar:20000},...Array.from({length:5},(_,i)=>({no:i+2,tutar:20000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'IŞIK KOÇ',s:'8',u:120000,t:mk([{no:1,tutar:5000,tarih:xd(46050),odendi:true,odenmeTarih:xd(46050),gercekTutar:5000},...Array.from({length:5},(_,i)=>({no:i+2,tutar:23000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'KAAN KOÇ',s:'8',u:120000,t:mk([{no:1,tutar:5000,tarih:xd(46050),odendi:true,odenmeTarih:xd(46050),gercekTutar:5000},...Array.from({length:5},(_,i)=>({no:i+2,tutar:23000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'MUHAMMED İBRAHİM YAŞAR',s:'8',u:100000,t:mk([{no:1,tutar:33000,tarih:xd(46053),odendi:true,odenmeTarih:xd(46053),gercekTutar:33000},{no:2,tutar:33000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:33000},{no:3,tutar:34000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:34000}])},
+    {ad:'MUHAMMED ÜSTÜN',s:'8',u:100000,t:mk([{no:1,tutar:100000,tarih:xd(46053),odendi:true,odenmeTarih:xd(46053),gercekTutar:100000}])},
+    {ad:'EGE ÖĞÜTOĞLU',s:'8',u:220000,t:mk([{no:1,tutar:36500,tarih:xd(46057),odendi:true,odenmeTarih:xd(46057),gercekTutar:36500},{no:2,tutar:36500,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:36500},{no:3,tutar:36500,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:36500},{no:4,tutar:110500,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'EGE TAŞÇI',s:'8',u:160000,t:mk([{no:1,tutar:32000,tarih:xd(46057),odendi:true,odenmeTarih:xd(46057),gercekTutar:32000},{no:2,tutar:32000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:32000},{no:3,tutar:32000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:32000},{no:4,tutar:32000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:5,tutar:32000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'AYŞEGÜL ECE YÜCE',s:'8',u:150000,t:mk([{no:1,tutar:12000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:12000},{no:2,tutar:10000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:10000},{no:3,tutar:10000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:10000},...Array.from({length:9},(_,i)=>({no:i+4,tutar:Math.round(118000/9),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'SİNAN ANAK',s:'8',u:192000,t:mk(Array.from({length:8},(_,i)=>({no:i+1,tutar:24000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null})))},
+    {ad:'OZAN DENİZ AYDEMİR',s:'8',u:192000,t:mk(Array.from({length:8},(_,i)=>({no:i+1,tutar:24000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null})))},
+    {ad:'ÖZGE DEFNE ÇEŞMECİ',s:'8',u:200000,t:mk([{no:1,tutar:50000,tarih:xd(46116),odendi:true,odenmeTarih:xd(46116),gercekTutar:50000},{no:2,tutar:50000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:3,tutar:50000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:4,tutar:50000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'MİNA İMGE KENAR',s:'7',u:75000,t:mk([{no:1,tutar:75000,tarih:xd(46067),odendi:true,odenmeTarih:xd(46067),gercekTutar:75000}])},
+    {ad:'MİRAY MİRZA',s:'7',u:120000,t:mk([{no:1,tutar:22000,tarih:xd(46081),odendi:true,odenmeTarih:xd(46081),gercekTutar:22000},{no:2,tutar:14000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:14000},{no:3,tutar:14000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:14000},{no:4,tutar:14000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:14000},...Array.from({length:4},(_,i)=>({no:i+5,tutar:14000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'BORA ARSLANTAŞ',s:'7',u:120000,t:mk([{no:1,tutar:22000,tarih:xd(46081),odendi:true,odenmeTarih:xd(46081),gercekTutar:22000},{no:2,tutar:14000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:14000},...Array.from({length:5},(_,i)=>({no:i+3,tutar:Math.round(84000/5),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'ENES CÖMERT',s:'7',u:140000,t:mk([{no:1,tutar:40000,tarih:xd(46081),odendi:true,odenmeTarih:xd(46081),gercekTutar:40000},{no:2,tutar:20000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:20000},{no:3,tutar:20000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:20000},{no:4,tutar:20000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:20000},{no:5,tutar:20000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null},{no:6,tutar:20000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'YUSUF EREN AKGÜL',s:'8',u:200000,t:mk([{no:1,tutar:50000,tarih:xd(46144),odendi:true,odenmeTarih:xd(46144),gercekTutar:50000},...Array.from({length:3},(_,i)=>({no:i+2,tutar:50000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'İDİL KALYONCU',s:'8',u:192000,t:mk([{no:1,tutar:60000,tarih:xd(46098),odendi:true,odenmeTarih:xd(46098),gercekTutar:60000},...Array.from({length:3},(_,i)=>({no:i+2,tutar:44000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'KERİM TOPRAK',s:'8',u:90000,t:mk([{no:1,tutar:90000,tarih:xd(46092),odendi:true,odenmeTarih:xd(46092),gercekTutar:90000}])},
+    {ad:'ŞEVVAL AHLATÇIOĞLU',s:'7',u:120000,t:mk([{no:1,tutar:22000,tarih:xd(46117),odendi:true,odenmeTarih:xd(46117),gercekTutar:22000},{no:2,tutar:14000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:14000},{no:3,tutar:14000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:14000},...Array.from({length:4},(_,i)=>({no:i+4,tutar:Math.round(70000/4),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'PIRIL EKİN KIRAN',s:'8',u:200000,t:mk([{no:1,tutar:40000,tarih:xd(46117),odendi:true,odenmeTarih:xd(46117),gercekTutar:40000},{no:2,tutar:20000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:20000},...Array.from({length:5},(_,i)=>({no:i+3,tutar:28000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'MELEK ENGEREK',s:'8',u:200000,t:mk([{no:1,tutar:40000,tarih:xd(46130),odendi:true,odenmeTarih:xd(46130),gercekTutar:40000},{no:2,tutar:25000,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:25000},...Array.from({length:4},(_,i)=>({no:i+3,tutar:Math.round(135000/4),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'BETÜL ZÜMRA KORKMAZ',s:'8',u:220000,t:mk([{no:1,tutar:20000,tarih:xd(46131),odendi:true,odenmeTarih:xd(46131),gercekTutar:20000},...Array.from({length:9},(_,i)=>({no:i+2,tutar:Math.round(200000/9),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'RABİA NUR ERASLAN',s:'8',u:220000,t:mk([{no:1,tutar:20000,tarih:xd(46131),odendi:true,odenmeTarih:xd(46131),gercekTutar:20000},...Array.from({length:9},(_,i)=>({no:i+2,tutar:Math.round(200000/9),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'HAYRUNİSA ALÇEP',s:'8',u:220000,t:mk([{no:1,tutar:20000,tarih:xd(46131),odendi:true,odenmeTarih:xd(46131),gercekTutar:20000},...Array.from({length:9},(_,i)=>({no:i+2,tutar:Math.round(200000/9),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'NİL AKOVA',s:'8',u:220000,t:mk([{no:1,tutar:40000,tarih:xd(46139),odendi:true,odenmeTarih:xd(46139),gercekTutar:40000},...Array.from({length:6},(_,i)=>({no:i+2,tutar:30000,tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'ATA YÜKSEL',s:'8',u:220000,t:mk([{no:1,tutar:50000,tarih:xd(46144),odendi:true,odenmeTarih:xd(46144),gercekTutar:50000},{no:2,tutar:21250,tarih:null,odendi:true,odenmeTarih:null,gercekTutar:21250},...Array.from({length:7},(_,i)=>({no:i+3,tutar:Math.round(148750/7),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+    {ad:'ZEYNEP COŞKUN',s:'7',u:130000,t:mk([{no:1,tutar:130000,tarih:xd(46164),odendi:false,odenmeTarih:null,gercekTutar:null}])},
+    {ad:'ZEYNEP İŞ',s:'8',u:220000,t:mk([{no:1,tutar:40000,tarih:xd(46180),odendi:false,odenmeTarih:null,gercekTutar:null},...Array.from({length:8},(_,i)=>({no:i+2,tutar:Math.round(180000/8),tarih:null,odendi:false,odenmeTarih:null,gercekTutar:null}))])},
+  ];
+  // Kız isimleri listesi — eşleşmeyenler erkek sayılır
+  const kizIsimleri=['FEYZA','DERİN','AYÇA','ARMİN','ECE','MİRA','AZRA','İREM','İKRA','PELİN','SANİYE','NERMİN','AYSU','ELA','IŞIK','ÖZGE','MİNA','MİRAY','ŞEVVAL','PIRIL','MELEK','BETÜL','RABİA','HAYRUNİSA','NİL','ZEYNEP','ÖYKÜ','İDİL'];
+  function tahminCinsiyet(ad){const ilk=ad.split(' ')[0].toUpperCase();return kizIsimleri.some(k=>ilk.includes(k))?'kiz':'erkek';}
+  const liste=raw.map(d=>({ad:d.ad,prog:'sinif',sinif:d.s,ucret:d.u,tarih:'',veli:'',tel:'',okul:'',not:'',cinsiyet:tahminCinsiyet(d.ad),taksitler:d.t}));
+  const kaydedilenler=await API.post('/api/ogrenciler/toplu',liste);
+  students.push(...kaydedilenler);
+  nId=Math.max(...students.map(s=>s.id))+1;
+}
+
+function renderSade(){
+  const srch=(document.getElementById('sl_srch').value||'').toLowerCase();
+  const fp=document.getElementById('sl_prog').value;
+  const fs=document.getElementById('sl_sinif').value;
+  const fc=document.getElementById('sl_cinsiyet').value;
+  let fl=students.filter(s=>{
+    if(srch&&!s.ad.toLowerCase().includes(srch))return false;
+    if(fp&&s.prog!==fp)return false;
+    if(fs&&s.sinif!==fs)return false;
+    if(fc&&s.cinsiyet!==fc)return false;
+    return true;
+  });
+
+  // Metrikler
+  const kiz=fl.filter(s=>s.cinsiyet==='kiz').length;
+  const erkek=fl.filter(s=>s.cinsiyet==='erkek').length;
+  const metrikEl=document.getElementById('sl_metrikler');
+  metrikEl.innerHTML=`
+    <div class="metric"><p class="ml">Toplam öğrenci</p><p class="mv">${fl.length}</p></div>
+    <div class="metric" style="border-color:#f0b8e0;"><p class="ml">👧 Kız</p><p class="mv" style="color:#8b1a5e;">${kiz}</p><p style="font-size:10px;color:#5dcaa5;margin-top:2px;">${fl.length>0?'%'+Math.round(kiz/fl.length*100):''}</p></div>
+    <div class="metric" style="border-color:#b8d4f0;"><p class="ml">👦 Erkek</p><p class="mv" style="color:#0c3472;">${erkek}</p><p style="font-size:10px;color:#5dcaa5;margin-top:2px;">${fl.length>0?'%'+Math.round(erkek/fl.length*100):''}</p></div>
+    ${['5','6','7','8'].map(sf=>{const cnt=fl.filter(s=>s.sinif===sf).length;return cnt>0?`<div class="metric"><p class="ml">${sf}. Sınıf</p><p class="mv">${cnt}</p></div>`:''}).join('')}
+  `;
+
+  const tbody=document.getElementById('sade_tbl');
+  if(!fl.length){tbody.innerHTML='<tr><td colspan="9" class="empty-state">Kayıt bulunamadı.</td></tr>';document.getElementById('sl_cnt').textContent='';return;}
+  tbody.innerHTML=fl.map((s,i)=>`
+    <tr>
+      <td style="color:#5dcaa5;font-weight:600;">${i+1}</td>
+      <td style="font-weight:600;color:#04342c;">${s.ad}</td>
+      <td>${s.cinsiyet==='kiz'?'<span class="badge" style="background:#fce4f3;color:#8b1a5e;">👧 Kız</span>':'<span class="badge" style="background:#ddeeff;color:#0c3472;">👦 Erkek</span>'}</td>
+      <td><span class="badge" style="background:${PC[s.prog]}20;color:${PC[s.prog]};">${PN[s.prog]}</span></td>
+      <td style="font-weight:500;">${s.sinif}. Sınıf</td>
+      <td style="color:#085041;font-weight:500;">${s.okul||'—'}</td>
+      <td style="color:#085041;">${s.veli||'—'}</td>
+      <td style="color:#085041;">${s.tel||'—'}</td>
+      <td style="font-size:11px;color:#5dcaa5;">${s.tarih?fmtD(s.tarih):'—'}</td>
+      <td style="font-size:11px;color:var(--color-text-tertiary,#888);">${s.not||'—'}</td>
+    </tr>`).join('');
+  document.getElementById('sl_cnt').textContent=fl.length+' kayıt';
+}
+
+function sadeExcel(){
+  try{
+    const srch=(document.getElementById('sl_srch').value||'').toLowerCase();
+    const fp=document.getElementById('sl_prog').value;
+    const fs=document.getElementById('sl_sinif').value;
+    const fc=document.getElementById('sl_cinsiyet').value;
+    let fl=students.filter(s=>{
+      if(srch&&!s.ad.toLowerCase().includes(srch))return false;
+      if(fp&&s.prog!==fp)return false;
+      if(fs&&s.sinif!==fs)return false;
+      if(fc&&s.cinsiyet!==fc)return false;
+      return true;
+    });
+    const rows=[['#','Ad Soyad','Cinsiyet','Program','Sınıf','Okul','Veli','Telefon','Kayıt Tarihi','Notlar']];
+    fl.forEach((s,i)=>rows.push([i+1,s.ad,s.cinsiyet==='kiz'?'Kız':'Erkek',PN[s.prog],s.sinif+'. Sınıf',s.okul||'',s.veli||'',s.tel||'',s.tarih||'',s.not||'']));
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:5},{wch:28},{wch:10},{wch:18},{wch:10},{wch:28},{wch:22},{wch:16},{wch:14},{wch:30}];
+    XLSX.utils.book_append_sheet(wb,ws,'Öğrenci Listesi');
+    const tarih=new Date().toLocaleDateString('tr-TR').replace(/\./g,'-');
+    XLSX.writeFile(wb,`YildizAkademi_OgrenciListesi_${tarih}.xlsx`);
+  }catch(e){alert('Excel hatası: '+e.message);}
+}
+
+// ── DIŞA AKTARMA ─────────────────────────────────────────────
+function excelAktar(){
+  try{
+    const wb=XLSX.utils.book_new();
+
+    // --- Öğrenci listesi ---
+    const ogrRows=[['Ad Soyad','Cinsiyet','Program','Sınıf','Toplam Ücret (₺)','Tahsilat (₺)','Kalan (₺)','Ödeme Durumu','Kayıt Tarihi','Veli','Telefon']];
+    students.forEach(s=>{
+      const tah=sTah(s),kal=s.ucret-tah,st=payStatus(s);
+      const stLbl=st==='geciken'?'Gecikmiş':st==='yaklasan'?'Yaklaşan':'Tamam';
+      const cins=s.cinsiyet==='kiz'?'Kız':'Erkek';
+      ogrRows.push([s.ad,cins,PN[s.prog],s.sinif+'. Sınıf',s.ucret,tah,kal,stLbl,s.tarih||'',s.veli||'',s.tel||'']);
+    });
+    const ws1=XLSX.utils.aoa_to_sheet(ogrRows);
+    ws1['!cols']=[{wch:25},{wch:10},{wch:16},{wch:10},{wch:16},{wch:14},{wch:12},{wch:14},{wch:14},{wch:20},{wch:16}];
+    XLSX.utils.book_append_sheet(wb,ws1,'Öğrenci Listesi');
+
+    // --- Taksit detayları ---
+    const taksitRows=[['Ad Soyad','Taksit No','Taksit Tutarı (₺)','Ödenen (₺)','Kalan (₺)','Vade Tarihi','Durum','Kısmi Ödemeler']];
+    students.forEach(s=>{
+      s.taksitler.forEach(t=>{
+        const od=tOdenen(t),kl=tKalan(t);
+        const d=t.tarih?new Date(t.tarih):null;if(d)d.setHours(0,0,0,0);
+        const gec=!t.odendi&&d&&d<today;
+        const ykl=!t.odendi&&d&&!gec&&Math.ceil((d-today)/864e5)<=3;
+        const dur=t.odendi?'Ödendi':gec?'Gecikmiş':ykl?'Yaklaşan':'Bekliyor';
+        const kismiStr=(t.kismi||[]).map(k=>`${k.tutar.toLocaleString('tr-TR')}₺ (${k.tarih||''})`).join(' | ');
+        taksitRows.push([s.ad,t.no,t.tutar,od,kl,t.tarih||'',dur,kismiStr]);
+      });
+    });
+    const ws2=XLSX.utils.aoa_to_sheet(taksitRows);
+    ws2['!cols']=[{wch:25},{wch:10},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:40}];
+    XLSX.utils.book_append_sheet(wb,ws2,'Taksit Detayları');
+
+    // --- Gelir özeti ---
+    const total=students.reduce((a,s)=>a+s.ucret,0);
+    const tah=students.reduce((a,s)=>a+sTah(s),0);
+    const gec=students.reduce((a,s)=>a+s.taksitler.filter(t=>!t.odendi&&t.tarih&&new Date(t.tarih)<today).reduce((b,t)=>b+tKalan(t),0),0);
+    const ozetRows=[
+      ['GELİR ÖZETİ',''],
+      ['Toplam öğrenci',students.length],
+      ['Toplam gelir (₺)',total],
+      ['Toplam tahsilat (₺)',tah],
+      ['Bekleyen (₺)',total-tah],
+      ['Geciken (₺)',gec],
+      ['',''],
+      ['PROGRAM BAZLI',''],
+    ];
+    ['sinif','ozel','kocluk','deneme'].forEach(p=>{
+      const ps=students.filter(s=>s.prog===p);
+      ozetRows.push([PN[p]+' - Öğrenci',ps.length]);
+      ozetRows.push([PN[p]+' - Gelir (₺)',ps.reduce((a,s)=>a+s.ucret,0)]);
+    });
+    ozetRows.push(['',''],['CİNSİYET DAĞILIMI','']);
+    const kizSay=students.filter(s=>s.cinsiyet==='kiz').length;
+    const erkekSay=students.filter(s=>s.cinsiyet==='erkek').length;
+    ozetRows.push(['Kız öğrenci sayısı',kizSay]);
+    ozetRows.push(['Erkek öğrenci sayısı',erkekSay]);
+    ozetRows.push(['Kız öğrenci geliri (₺)',students.filter(s=>s.cinsiyet==='kiz').reduce((a,s)=>a+s.ucret,0)]);
+    ozetRows.push(['Erkek öğrenci geliri (₺)',students.filter(s=>s.cinsiyet==='erkek').reduce((a,s)=>a+s.ucret,0)]);
+    ozetRows.push(['',''],['GİDERLER','']);
+    const gO=teachers.reduce((a,t)=>a+t.maas,0)*12*1.3;
+    const gD=(vn('g_myd')+vn('g_eko')+vn('g_reh')+vn('g_dpr'))*12*1.3;
+    const gS=(vn('g_kira')+vn('g_elek')+vn('g_su')+vn('g_int')+vn('g_tem'))*12;
+    const gP=vn('g_smr')+vn('g_aj')+vn('g_muh')+vn('g_krt')+vn('g_dg');
+    const tGid=gO+gD+gS+gP,kOn=total-tGid,ver=Math.max(kOn*0.25,0),net=kOn-ver;
+    ozetRows.push(['Öğretmen maaşları SGK dahil (₺)',Math.round(gO)]);
+    ozetRows.push(['Diğer personel SGK dahil (₺)',Math.round(gD)]);
+    ozetRows.push(['Sabit giderler (₺)',Math.round(gS)]);
+    ozetRows.push(['Pazarlama & diğer (₺)',Math.round(gP)]);
+    ozetRows.push(['Toplam gider (₺)',Math.round(tGid)]);
+    ozetRows.push(['Vergi öncesi kar (₺)',Math.round(kOn)]);
+    ozetRows.push(['Kurumlar vergisi %25 (₺)',Math.round(ver)]);
+    ozetRows.push(['NET KAR (₺)',Math.round(net)]);
+    const ws3=XLSX.utils.aoa_to_sheet(ozetRows);
+    ws3['!cols']=[{wch:35},{wch:20}];
+    XLSX.utils.book_append_sheet(wb,ws3,'Gelir-Gider Özeti');
+
+    // --- Öğretmenler ---
+    const tRows=[['Ad / Branş','Aylık Brüt (₺)','Yıllık Maliyet SGK dahil (₺)']];
+    teachers.forEach(t=>tRows.push([t.ad,t.maas,Math.round(t.maas*12*1.3)]));
+    const ws4=XLSX.utils.aoa_to_sheet(tRows);
+    ws4['!cols']=[{wch:25},{wch:18},{wch:24}];
+    XLSX.utils.book_append_sheet(wb,ws4,'Öğretmenler');
+
+    const tarih=new Date().toLocaleDateString('tr-TR').replace(/\./g,'-');
+    XLSX.writeFile(wb,`YildizAkademi_${tarih}.xlsx`);
+  }catch(e){alert('Excel aktarma hatası: '+e.message);}
+}
+
+function pdfAktar(){
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const tarih=new Date().toLocaleDateString('tr-TR');
+    let y=15;
+
+    // Başlık
+    doc.setFontSize(16);doc.setTextColor(15,110,86);
+    doc.text('Istanbul Yildiz Akademi',148,y,{align:'center'});
+    y+=8;
+    doc.setFontSize(10);doc.setTextColor(100,100,100);
+    doc.text('Ogrenci ve Odeme Raporu - '+tarih,148,y,{align:'center'});
+    y+=10;
+
+    // Özet metrikler
+    const total=students.reduce((a,s)=>a+s.ucret,0);
+    const tah=students.reduce((a,s)=>a+sTah(s),0);
+    doc.setFontSize(9);doc.setTextColor(4,52,44);
+    const metr=[
+      ['Toplam Ogrenci',students.length+''],
+      ['Toplam Gelir',total.toLocaleString('tr-TR')+' TL'],
+      ['Tahsilat',tah.toLocaleString('tr-TR')+' TL'],
+      ['Bekleyen',(total-tah).toLocaleString('tr-TR')+' TL'],
+    ];
+    let mx=14;
+    metr.forEach(m=>{
+      doc.setFillColor(225,245,238);doc.roundedRect(mx,y,60,12,2,2,'F');
+      doc.setFontSize(8);doc.setTextColor(8,80,65);doc.text(m[0],mx+30,y+5,{align:'center'});
+      doc.setFontSize(11);doc.setTextColor(4,52,44);doc.text(m[1],mx+30,y+10,{align:'center'});
+      mx+=65;
+    });
+    y+=20;
+
+    // Öğrenci tablosu
+    doc.setFontSize(11);doc.setTextColor(15,110,86);
+    doc.text('Ogrenci Listesi',14,y);y+=4;
+
+    const rows=students.map(s=>{
+      const tah2=sTah(s),kal=s.ucret-tah2,st=payStatus(s);
+      return [
+        s.ad,
+        PN[s.prog].substring(0,10),
+        s.sinif+'.',
+        s.ucret.toLocaleString('tr-TR'),
+        tah2.toLocaleString('tr-TR'),
+        kal.toLocaleString('tr-TR'),
+        st==='geciken'?'Gecikti':st==='yaklasan'?'Yaklasan':'Tamam',
+        s.tarih||''
+      ];
+    });
+
+    doc.autoTable({
+      startY:y,
+      head:[['Ad Soyad','Program','Sinif','Ucret TL','Tahsilat TL','Kalan TL','Durum','Kayit']],
+      body:rows,
+      styles:{fontSize:7,cellPadding:2,overflow:'linebreak'},
+      headStyles:{fillColor:[15,110,86],textColor:255,fontSize:7,fontStyle:'bold'},
+      alternateRowStyles:{fillColor:[240,250,246]},
+      columnStyles:{
+        0:{cellWidth:45},1:{cellWidth:25},2:{cellWidth:12},
+        3:{cellWidth:22,halign:'right'},4:{cellWidth:22,halign:'right'},
+        5:{cellWidth:22,halign:'right'},6:{cellWidth:18},7:{cellWidth:20}
+      },
+      didDrawPage:(data)=>{
+        doc.setFontSize(7);doc.setTextColor(150,150,150);
+        doc.text('Sayfa '+data.pageNumber,148,205,{align:'center'});
+      }
+    });
+
+    // Yeni sayfa - Gider özeti
+    doc.addPage();
+    y=15;
+    doc.setFontSize(13);doc.setTextColor(15,110,86);
+    doc.text('Gelir - Gider Ozeti',14,y);y+=10;
+
+    const gO=teachers.reduce((a,t)=>a+t.maas,0)*12*1.3;
+    const gD=(vn('g_myd')+vn('g_eko')+vn('g_reh')+vn('g_dpr'))*12*1.3;
+    const gS=(vn('g_kira')+vn('g_elek')+vn('g_su')+vn('g_int')+vn('g_tem'))*12;
+    const gP=vn('g_smr')+vn('g_aj')+vn('g_muh')+vn('g_krt')+vn('g_dg');
+    const tGid=gO+gD+gS+gP,kOn=total-tGid,ver=Math.max(kOn*0.25,0),net=kOn-ver;
+
+    doc.autoTable({
+      startY:y,
+      head:[['Kalem','Tutar (TL)']],
+      body:[
+        ['Toplam Gelir',total.toLocaleString('tr-TR')],
+        ['Ogretmen Maaslari (SGK dahil)',Math.round(gO).toLocaleString('tr-TR')],
+        ['Diger Personel (SGK dahil)',Math.round(gD).toLocaleString('tr-TR')],
+        ['Sabit Giderler',Math.round(gS).toLocaleString('tr-TR')],
+        ['Pazarlama & Diger',Math.round(gP).toLocaleString('tr-TR')],
+        ['Toplam Gider',Math.round(tGid).toLocaleString('tr-TR')],
+        ['Vergi Oncesi Kar',Math.round(kOn).toLocaleString('tr-TR')],
+        ['Kurumlar Vergisi (%25)',Math.round(ver).toLocaleString('tr-TR')],
+        ['NET KAR',Math.round(net).toLocaleString('tr-TR')],
+      ],
+      styles:{fontSize:10,cellPadding:3},
+      headStyles:{fillColor:[15,110,86],textColor:255,fontSize:10,fontStyle:'bold'},
+      columnStyles:{0:{cellWidth:120},1:{cellWidth:60,halign:'right'}},
+      didParseCell:(data)=>{
+        if(data.row.index===8){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[225,245,238];data.cell.styles.textColor=[4,52,44];}
+      }
+    });
+
+    const dosyaTarih=new Date().toLocaleDateString('tr-TR').replace(/\./g,'-');
+    doc.save(`YildizAkademi_${dosyaTarih}.pdf`);
+  }catch(e){alert('PDF aktarma hatasi: '+e.message);}
+}
+document.getElementById('f_tarih').valueAsDate=new Date();
+document.getElementById('f_ilk').valueAsDate=new Date();
+(async()=>{
+  await yukle();
+  renderTeachers();
+  updateAll();
+})();
+</script>
+</body>
+</html>
