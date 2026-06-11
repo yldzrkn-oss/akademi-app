@@ -1,11 +1,17 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import os, json
+from functools import wraps
+import os, json, hashlib
 
 app = Flask(__name__)
 
-# Veritabanı: Render'da PostgreSQL, lokalde SQLite
+# Güvenlik ayarları
+app.secret_key = os.environ.get('SECRET_KEY', 'yildiz-akademi-gizli-anahtar-2025')
+ADMIN_USER = os.environ.get('ADMIN_USER', 'yildiz')
+ADMIN_PASS = os.environ.get('ADMIN_PASS', 'akademi2025')
+
+# Veritabanı
 DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///akademi.db')
 if DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
@@ -29,7 +35,7 @@ class Ogrenci(db.Model):
     veli        = db.Column(db.String(200), default='')
     tel         = db.Column(db.String(50), default='')
     not_        = db.Column('not', db.String(500), default='')
-    taksitler   = db.Column(db.Text, default='[]')   # JSON
+    taksitler   = db.Column(db.Text, default='[]')
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -62,13 +68,46 @@ class Ayar(db.Model):
     key   = db.Column(db.String(100), primary_key=True)
     value = db.Column(db.Text, default='')
 
+# ── GİRİŞ KORUMASI ───────────────────────────────────────────
+
+def giris_gerekli(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('giris_yapildi'):
+            if request.path.startswith('/api/'):
+                return jsonify({'hata': 'Giriş gerekli'}), 401
+            return redirect(url_for('giris'))
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/giris', methods=['GET', 'POST'])
+def giris():
+    hata = ''
+    if request.method == 'POST':
+        kullanici = request.form.get('kullanici', '')
+        sifre = request.form.get('sifre', '')
+        if kullanici == ADMIN_USER and sifre == ADMIN_PASS:
+            session['giris_yapildi'] = True
+            session.permanent = True
+            return redirect(url_for('index'))
+        else:
+            hata = 'Kullanıcı adı veya şifre hatalı.'
+    return render_template('giris.html', hata=hata)
+
+@app.route('/cikis')
+def cikis():
+    session.clear()
+    return redirect(url_for('giris'))
+
 # ── API: ÖĞRENCILER ───────────────────────────────────────────
 
 @app.route('/api/ogrenciler', methods=['GET'])
+@giris_gerekli
 def ogrenci_list():
     return jsonify([o.to_dict() for o in Ogrenci.query.all()])
 
 @app.route('/api/ogrenciler', methods=['POST'])
+@giris_gerekli
 def ogrenci_ekle():
     d = request.json
     o = Ogrenci(
@@ -89,6 +128,7 @@ def ogrenci_ekle():
     return jsonify(o.to_dict()), 201
 
 @app.route('/api/ogrenciler/<int:oid>', methods=['PUT'])
+@giris_gerekli
 def ogrenci_guncelle(oid):
     o = Ogrenci.query.get_or_404(oid)
     d = request.json
@@ -103,15 +143,15 @@ def ogrenci_guncelle(oid):
     return jsonify(o.to_dict())
 
 @app.route('/api/ogrenciler/<int:oid>', methods=['DELETE'])
+@giris_gerekli
 def ogrenci_sil(oid):
     o = Ogrenci.query.get_or_404(oid)
     db.session.delete(o)
     db.session.commit()
     return jsonify({'ok': True})
 
-# ── API: TOPLU KAYIT (Excel import) ──────────────────────────
-
 @app.route('/api/ogrenciler/toplu', methods=['POST'])
+@giris_gerekli
 def ogrenci_toplu():
     liste = request.json
     eklenenler = []
@@ -137,10 +177,12 @@ def ogrenci_toplu():
 # ── API: ÖĞRETMENLER ─────────────────────────────────────────
 
 @app.route('/api/ogretmenler', methods=['GET'])
+@giris_gerekli
 def ogretmen_list():
     return jsonify([o.to_dict() for o in Ogretmen.query.all()])
 
 @app.route('/api/ogretmenler', methods=['POST'])
+@giris_gerekli
 def ogretmen_ekle():
     d = request.json
     o = Ogretmen(ad=d.get('ad','Yeni Öğretmen'), maas=d.get('maas',0))
@@ -149,29 +191,32 @@ def ogretmen_ekle():
     return jsonify(o.to_dict()), 201
 
 @app.route('/api/ogretmenler/<int:oid>', methods=['PUT'])
+@giris_gerekli
 def ogretmen_guncelle(oid):
     o = Ogretmen.query.get_or_404(oid)
     d = request.json
-    if 'ad' in d:  o.ad   = d['ad']
+    if 'ad' in d:   o.ad   = d['ad']
     if 'maas' in d: o.maas = d['maas']
     db.session.commit()
     return jsonify(o.to_dict())
 
 @app.route('/api/ogretmenler/<int:oid>', methods=['DELETE'])
+@giris_gerekli
 def ogretmen_sil(oid):
     o = Ogretmen.query.get_or_404(oid)
     db.session.delete(o)
     db.session.commit()
     return jsonify({'ok': True})
 
-# ── API: AYARLAR (gider kalemleri) ───────────────────────────
+# ── API: AYARLAR ─────────────────────────────────────────────
 
 @app.route('/api/ayarlar', methods=['GET'])
+@giris_gerekli
 def ayar_list():
-    ayarlar = {a.key: a.value for a in Ayar.query.all()}
-    return jsonify(ayarlar)
+    return jsonify({a.key: a.value for a in Ayar.query.all()})
 
 @app.route('/api/ayarlar', methods=['POST'])
+@giris_gerekli
 def ayar_kaydet():
     d = request.json
     for key, value in d.items():
@@ -186,6 +231,7 @@ def ayar_kaydet():
 # ── ANASAYFA ─────────────────────────────────────────────────
 
 @app.route('/')
+@giris_gerekli
 def index():
     return render_template('index.html')
 
